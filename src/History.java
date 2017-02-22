@@ -28,7 +28,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * <p>
  * The stack may reach an end in a number of ways. If the first action taken
  * since program inception is undone, then the stack will be empty. If the undo
- * limit is reached (by default there is not limit, use {@link #setActionLimit(int)}
+ * limit is reached (by default there is not limit, use {@link #setLimit(int)}
  * to define a limit on the number of undos and redos. [To be clear, the number
  * of redos is the same as undos and so the sum of all possible undos and redos
  * maybe greater than the limit]) then the stack will begin to empty from the
@@ -68,6 +68,12 @@ public class History {
     private History() {
     }
 
+    /**
+     * Return the singleton instance of History used throughout the life time
+     * of the program. Thread safe method only locks if the instance is null
+     *
+     * @return the singleton History instance
+     */
     public static History getInstance()
     {
         if (instance == null) {
@@ -84,24 +90,65 @@ public class History {
         return instance;
     }
 
+    /**
+     * Return the maximum possible number of undos and redos to store. Undos and
+     * redos are counted independently and so the sum of allowed redos and undos
+     * maybe greater than this but the total number of saved {@link Action}
+     * instances is never more than twice this limit. Returns -1 if no
+     * limit has been set by the user
+     *
+     * @return the maximum number of undos or redos allowed or -1 if such a limit
+     * was never set
+     */
     public int getLimit() {
         return limit;
     }
 
-    public void setActionLimit(int limit) {
+    /**
+     * Sets the limit on the maximum number of undos and redo actions to store
+     * @see #getLimit()
+     * @param limit the limit of the number of undos and redos to store
+     */
+    public void setLimit(int limit) {
         this.limit = limit;
     }
 
+    /**
+     * Registers the button passed as the undo button of the program. By passing
+     * this method a {@link Button} instance it will disable and enable that
+     * button in accordance with the availability of the undo function within
+     * the History class itself. So, if there are no actions to undo, then
+     * the undo button would be disabled and otherwise it would be enabled
+     * @param button the button to be treated as the undo button by the History
+     *               class
+     */
     public void registerUndoButton(Button button)
     {
         undoButton = button;
     }
 
+    /**
+     * Registers a button as the redo button. Performs the same tasks as
+     * {@link #registerUndoButton(Button)}
+     * @see #registerUndoButton(Button)
+     * @param button
+     */
     public void registerRedoButton(Button button)
     {
         redoButton = button;
     }
 
+    /**
+     * Stores the action in the stack of actions collecting all undo-able actions
+     * and then calls the {@link Action#execute()} method of the action.
+     *
+     * Note that this method calls {@link Lock#lock()} and will wait for all
+     * other threads to not be undoing, redoing, or registering an action before
+     * it registers the action
+     *
+     * @see #registerAction(Action)
+     * @param action the action that will be registered and executed
+     */
     public void registerActionAndExecute(Action action) {
         lock.lock();
         try {
@@ -113,6 +160,17 @@ public class History {
 
     }
 
+    /**
+     * Stores the action in the stack of action collecting all the undo-able
+     * actions
+     *
+     * Note that this method calls {@link Lock#lock()} and will wait for all
+     * other threads to not be undoing, redoing, or registering an action before
+     * it registers the action
+     *
+     * @see #registerActionAndExecute(Action)
+     * @param action the action to be stored
+     */
     public void registerAction(Action action) {
         lock.lock();
         try {
@@ -127,6 +185,18 @@ public class History {
         }
     }
 
+    /**
+     * This method retrieves the most recently registered {@link Action} that
+     * has not already been undone by this method and calles the {@link Action#undo()}
+     * method on it
+     *
+     * Note that this method calls {@link Lock#lock()} and will wait for all
+     * other threads to not be undoing, redoing, or registering an action before
+     * it registers the action
+     *
+     * @return true if the undo was called or false if there was nothing to undo,
+     * that is if the undo stack was empty
+     */
     public boolean undo() {
         lock.lock();
         try {
@@ -158,6 +228,22 @@ public class History {
         }
     }
 
+    /**
+     * This method retrieves the most recently undone {@link Action} that
+     * has not already been redone by this method and calles the {@link Action#redo()}
+     * method on it. Note that an action must be undone by calling
+     * {@link #undo()} first. Note also, that any and everytime a new action
+     * is registered using either {@link #registerAction(Action)} or
+     * {@link #registerActionAndExecute(Action)} all actions saved for redoing are
+     * cleared. That is the redo stack is cleared by calling {@link LinkedBlockingDeque#clear()}
+     *
+     * Note that this method calls {@link Lock#lock()} and will wait for all
+     * other threads to not be undoing, redoing, or registering an action before
+     * it registers the action
+     *
+     * @return true if the redo was called or false if there was nothing to undo,
+     * that is if the undo stack was empty
+     */
     public boolean redo() {
         lock.lock();
         try {
