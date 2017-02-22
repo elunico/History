@@ -1,6 +1,6 @@
 import javafx.scene.control.Button;
 
-import java.util.Stack;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -58,9 +58,9 @@ public class History {
 
     private static History instance;
     private static Lock instanceLock = new ReentrantLock();
-    private int limit;
-    private Stack<Action> undoStack = new Stack<>();
-    private Stack<Action> redoStack = new Stack<>();
+    private int limit = -1;
+    private LinkedBlockingDeque<Action> undoDeque = new LinkedBlockingDeque<>();
+    private LinkedBlockingDeque<Action> redoDeque = new LinkedBlockingDeque<>();
     private Lock lock = new ReentrantLock();
     private Button undoButton;
     private Button redoButton;
@@ -116,8 +116,11 @@ public class History {
     public void registerAction(Action action) {
         lock.lock();
         try {
-            undoStack.push(action);
-            redoStack.clear();
+            if (limit > 0 && undoDeque.size() >= limit) {
+                undoDeque.removeLast();
+            }
+            undoDeque.push(action);
+            redoDeque.clear();
             redoButton.setDisable(true);
         } finally {
             lock.unlock();
@@ -127,12 +130,15 @@ public class History {
     public boolean undo() {
         lock.lock();
         try {
-            if (undoStack.isEmpty()) {
+            if (undoDeque.isEmpty()) {
                 return false;
             } else {
-                Action a = undoStack.pop();
+                Action a = undoDeque.pop();
                 a.undo();
-                redoStack.push(a);
+                if (limit > 0 && redoDeque.size() >= limit) {
+                    redoDeque.removeLast();
+                }
+                redoDeque.push(a);
                 updateButtonsForUndo();
                 return true;
             }
@@ -142,7 +148,7 @@ public class History {
     }
 
     private void updateButtonsForUndo() {
-        if (undoStack.isEmpty()) {
+        if (undoDeque.isEmpty()) {
             if (undoButton != null) {
                 undoButton.setDisable(true);
             }
@@ -155,12 +161,15 @@ public class History {
     public boolean redo() {
         lock.lock();
         try {
-            if (redoStack.isEmpty()) {
+            if (redoDeque.isEmpty()) {
                 return false;
             } else {
-                Action a = redoStack.pop();
+                Action a = redoDeque.pop();
                 a.redo();
-                undoStack.push(a);
+                if (limit > 0 && undoDeque.size() >= limit) {
+                    undoDeque.removeLast();
+                }
+                undoDeque.push(a);
                 updateButtonsForRedo();
                 return true;
             }
@@ -170,7 +179,7 @@ public class History {
     }
 
     private void updateButtonsForRedo() {
-        if (redoStack.isEmpty()) {
+        if (redoDeque.isEmpty()) {
             if (redoButton != null) {
                 redoButton.setDisable(true);
             }
