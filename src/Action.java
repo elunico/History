@@ -43,7 +43,7 @@ public interface Action {
      * states as they were before the call to {@link #execute()}. While this
      * method does no checking to ensure execute was called first, it is logically
      * senseless to use this method before execute.
-     *
+     * <p>
      * Also called by {@link History#undo()}
      */
     void undo();
@@ -53,8 +53,9 @@ public interface Action {
      * as a simple call to {@link #execute()} but sometimes requires more processing
      * This method should only be called following a call to execute and subsequent
      * call to {@link #undo()}
-     *
+     * <p>
      * Also called by {@link History#redo()}
+     *
      * @see History
      */
     void redo();

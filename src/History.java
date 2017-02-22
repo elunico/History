@@ -106,8 +106,9 @@ public class History {
 
     /**
      * Sets the limit on the maximum number of undos and redo actions to store
-     * @see #getLimit()
+     *
      * @param limit the limit of the number of undos and redos to store
+     * @see #getLimit()
      */
     public void setLimit(int limit) {
         this.limit = limit;
@@ -119,6 +120,7 @@ public class History {
      * button in accordance with the availability of the undo function within
      * the History class itself. So, if there are no actions to undo, then
      * the undo button would be disabled and otherwise it would be enabled
+     *
      * @param button the button to be treated as the undo button by the History
      *               class
      */
@@ -130,8 +132,9 @@ public class History {
     /**
      * Registers a button as the redo button. Performs the same tasks as
      * {@link #registerUndoButton(Button)}
-     * @see #registerUndoButton(Button)
+     *
      * @param button
+     * @see #registerUndoButton(Button)
      */
     public void registerRedoButton(Button button)
     {
@@ -141,13 +144,13 @@ public class History {
     /**
      * Stores the action in the stack of actions collecting all undo-able actions
      * and then calls the {@link Action#execute()} method of the action.
-     *
+     * <p>
      * Note that this method calls {@link Lock#lock()} and will wait for all
      * other threads to not be undoing, redoing, or registering an action before
      * it registers the action
      *
-     * @see #registerAction(Action)
      * @param action the action that will be registered and executed
+     * @see #registerAction(Action)
      */
     public void registerActionAndExecute(Action action) {
         lock.lock();
@@ -163,13 +166,13 @@ public class History {
     /**
      * Stores the action in the stack of action collecting all the undo-able
      * actions
-     *
+     * <p>
      * Note that this method calls {@link Lock#lock()} and will wait for all
      * other threads to not be undoing, redoing, or registering an action before
      * it registers the action
      *
-     * @see #registerActionAndExecute(Action)
      * @param action the action to be stored
+     * @see #registerActionAndExecute(Action)
      */
     public void registerAction(Action action) {
         lock.lock();
@@ -189,7 +192,7 @@ public class History {
      * This method retrieves the most recently registered {@link Action} that
      * has not already been undone by this method and calles the {@link Action#undo()}
      * method on it
-     *
+     * <p>
      * Note that this method calls {@link Lock#lock()} and will wait for all
      * other threads to not be undoing, redoing, or registering an action before
      * it registers the action
@@ -236,7 +239,7 @@ public class History {
      * is registered using either {@link #registerAction(Action)} or
      * {@link #registerActionAndExecute(Action)} all actions saved for redoing are
      * cleared. That is the redo stack is cleared by calling {@link LinkedBlockingDeque#clear()}
-     *
+     * <p>
      * Note that this method calls {@link Lock#lock()} and will wait for all
      * other threads to not be undoing, redoing, or registering an action before
      * it registers the action
