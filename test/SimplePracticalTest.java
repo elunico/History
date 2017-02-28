@@ -86,8 +86,9 @@ public class SimplePracticalTest extends Application {
                 {
                     oldColor = l.getTextFill();
                     Random r = new Random();
-                    l.setTextFill(Color.color(r.nextDouble(), r.nextDouble(),
-                      r.nextDouble()));
+                    l.setTextFill(
+                      Color.color(r.nextDouble(), r.nextDouble(),
+                        r.nextDouble()));
                     recolor = l.getTextFill();
 
                 }

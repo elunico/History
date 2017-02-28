@@ -56,7 +56,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class History {
 
-    private static History instance;
+    private static volatile History instance;
     private static Lock instanceLock = new ReentrantLock();
     private int limit = -1;
     private LinkedBlockingDeque<Action> undoDeque = new LinkedBlockingDeque<>();
@@ -65,8 +65,7 @@ public class History {
     private Button undoButton;
     private Button redoButton;
 
-    private History() {
-    }
+    private History() { }
 
     /**
      * Return the singleton instance of History used throughout the life time
@@ -74,8 +73,7 @@ public class History {
      *
      * @return the singleton History instance
      */
-    public static History getInstance()
-    {
+    public static History getInstance() {
         if (instance == null) {
             instanceLock.lock();
             try {
@@ -124,8 +122,7 @@ public class History {
      * @param button the button to be treated as the undo button by the History
      *               class
      */
-    public void registerUndoButton(Button button)
-    {
+    public void registerUndoButton(Button button) {
         undoButton = button;
     }
 
@@ -136,8 +133,7 @@ public class History {
      * @param button
      * @see #registerUndoButton(Button)
      */
-    public void registerRedoButton(Button button)
-    {
+    public void registerRedoButton(Button button) {
         redoButton = button;
     }
 
