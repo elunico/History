@@ -37,9 +37,37 @@ public class SimplePracticalTest extends Application {
         Button button = new Button("Do something");
         Button ccb = new Button("Change Color");
         Button test = new Button("Do Something else");
+        Button dangerousButton = new Button("DO NOT CLICK ME");
 
         History.getInstance().registerUndoButton(undo);
         History.getInstance().registerRedoButton(redo);
+
+        dangerousButton.setOnAction( event -> {
+            Action a = new Action() {
+                @Override
+                public void execute() {
+                    /* Do nothing */
+                }
+
+                @Override
+                public void undo() {
+                    // This action waits FOREVER when undoing
+                    synchronized (this) {
+                        try {
+                            this.wait();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                @Override
+                public void redo() {
+                    execute();
+                }
+            };
+            History.getInstance().registerActionAndExecute(a);
+        });
 
         test.setOnAction(event ->
         {
@@ -142,13 +170,14 @@ public class SimplePracticalTest extends Application {
             History.getInstance().registerActionAndExecute(a);
         });
 
+        // ACQUIRES NO LOCK
         undo.setOnAction(event -> History.getInstance().undo());
 
         redo.setOnAction(event -> History.getInstance().redo());
 
         VBox b = new VBox(l);
         b.setPrefHeight(300);
-        HBox buttonBox = new HBox(undo, redo, button, ccb, test);
+        HBox buttonBox = new HBox(undo, redo, button, ccb, dangerousButton, test);
         VBox v = new VBox(b, t, buttonBox);
 
         primaryStage.addEventFilter(KeyEvent.KEY_PRESSED, event ->

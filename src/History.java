@@ -156,7 +156,6 @@ public class History {
         } finally {
             lock.unlock();
         }
-
     }
 
     /**
@@ -178,7 +177,8 @@ public class History {
             }
             undoDeque.push(action);
             redoDeque.clear();
-            redoButton.setDisable(true);
+            if (redoButton != null)
+                redoButton.setDisable(true);
         } finally {
             lock.unlock();
         }
