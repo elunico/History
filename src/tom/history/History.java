@@ -172,6 +172,7 @@ public class History {
         lock.lock();
         try {
             undoDeque.peekFirst().execute();
+            updateButtonsForExecute();
         } finally {
             lock.unlock();
         }
