@@ -4,8 +4,9 @@ import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+import tom.history.Action;
+import tom.history.History;
 
 /**
  * @author Thomas Povinelli

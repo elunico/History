@@ -11,6 +11,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import tom.history.Action;
+import tom.history.History;
 
 import java.util.Random;
 

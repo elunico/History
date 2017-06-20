@@ -1,3 +1,5 @@
+package tom.history;
+
 import javafx.scene.control.Button;
 
 import java.util.concurrent.LinkedBlockingDeque;
@@ -5,18 +7,18 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * History is a singleton class used to interface with Undo and Redo using
- * the {@link Action} interface. Getting the instance of History uses {@link #getInstance()}
- * and is the only way to interface with the History class since the constructor is
+ * tom.history.History is a singleton class used to interface with Undo and Redo using
+ * the {@link Action} interface. Getting the instance of tom.history.History uses {@link #getInstance()}
+ * and is the only way to interface with the tom.history.History class since the constructor is
  * private and there are no other static methods
  * <p>
  * To use this class, is meant to be very simple. It is not the strongest or most
  * complex implementation of Undo and Redo, but it is capable. First you must
  * fully implement {@link Action} in a class. Once this class is implemented
- * (either anonymously or otherwise) it can be used for History. Given
- * {@code Action action = new Action() { ... } }. First thing you will need to do
- * is register the Action with the History instance. This is done with
- * {@link #registerAction(Action)} by calling {@code History.getInstance().registerAction(action);}
+ * (either anonymously or otherwise) it can be used for tom.history.History. Given
+ * {@code tom.history.Action action = new tom.history.Action() { ... } }. First thing you will need to do
+ * is register the tom.history.Action with the tom.history.History instance. This is done with
+ * {@link #registerAction(Action)} by calling {@code tom.history.History.getInstance().registerAction(action);}
  * Once you do this you may call the {@link Action#execute()} {@code action.execute();} method
  * Alternatively you could call {@link #registerActionAndExecute(Action)} which
  * will register the action and call its execute method.
@@ -38,11 +40,11 @@ import java.util.concurrent.locks.ReentrantLock;
  * redo stack is cleared whenever an action is registered.
  * <p>
  * Finally, you can use {@link #registerUndoButton(Button)} and {@link #registerRedoButton(Button)}
- * methods to register with the History class. This allows the history class
+ * methods to register with the tom.history.History class. This allows the history class
  * to maintain the state of these buttons in accordance with the size of the undo stack
  * and redo stack. It is not necessary that you use these methods or give the class buttons
  * This function is independent of all other functions and it is safe to ignore these
- * two methods and use the History class in the same way as you would with the buttons
+ * two methods and use the tom.history.History class in the same way as you would with the buttons
  * If you do use these methods then unod and redo will be disabled and enabled
  * according to when such actions are available to the user
  * <p>
@@ -51,7 +53,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * (deque) in order to implement undo/redo size limits in an efficient way.
  * However, for all intents and purposes it is treated like a stack except for that.
  * <p>
- * Note also that History is designed to be thread safe. Calling it from many threads
+ * Note also that tom.history.History is designed to be thread safe. Calling it from many threads
  * is acceptable as it has locking mechanisms in place.
  */
 public class History {
@@ -60,10 +62,10 @@ public class History {
     private static Lock instanceLock = new ReentrantLock();
 
     /**
-     * Return the singleton instance of History used throughout the life time
+     * Return the singleton instance of tom.history.History used throughout the life time
      * of the program. Thread safe method only locks if the instance is null
      *
-     * @return the singleton History instance
+     * @return the singleton tom.history.History instance
      */
     public static History getInstance() {
         if (instance == null) {
@@ -117,10 +119,10 @@ public class History {
      * Registers the button passed as the undo button of the program. By passing
      * this method a {@link Button} instance it will disable and enable that
      * button in accordance with the availability of the undo function within
-     * the History class itself. So, if there are no actions to undo, then
+     * the tom.history.History class itself. So, if there are no actions to undo, then
      * the undo button would be disabled and otherwise it would be enabled
      *
-     * @param button the button to be treated as the undo button by the History
+     * @param button the button to be treated as the undo button by the tom.history.History
      *               class
      */
     public void registerUndoButton(Button button) {
@@ -155,6 +157,21 @@ public class History {
             registerAction(action);
             action.execute();
             updateButtonsForExecute();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Use this function to execute an action that has just been registered
+     * If you choose to use the {@link #registerAction(Action)} method instead
+     * of the {@link #registerActionAndExecute(Action)} method, you can call this
+     * method after to execute the <strong>most recently registered action</strong>
+     */
+    public void executeMostRecentAction() {
+        lock.lock();
+        try {
+            undoDeque.peekFirst().execute();
         } finally {
             lock.unlock();
         }
