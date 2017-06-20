@@ -58,14 +58,6 @@ public class History {
 
     private static volatile History instance;
     private static Lock instanceLock = new ReentrantLock();
-    private int limit = -1;
-    private LinkedBlockingDeque<Action> undoDeque = new LinkedBlockingDeque<>();
-    private LinkedBlockingDeque<Action> redoDeque = new LinkedBlockingDeque<>();
-    private Lock lock = new ReentrantLock();
-    private Button undoButton;
-    private Button redoButton;
-
-    private History() { }
 
     /**
      * Return the singleton instance of History used throughout the life time
@@ -86,6 +78,15 @@ public class History {
             }
         }
         return instance;
+    }
+    private int limit = -1;
+    private LinkedBlockingDeque<Action> undoDeque = new LinkedBlockingDeque<>();
+    private LinkedBlockingDeque<Action> redoDeque = new LinkedBlockingDeque<>();
+    private Lock lock = new ReentrantLock();
+    private Button undoButton;
+    private Button redoButton;
+
+    private History() {
     }
 
     /**
@@ -153,8 +154,21 @@ public class History {
         try {
             registerAction(action);
             action.execute();
+            updateButtonsForExecute();
         } finally {
             lock.unlock();
+        }
+    }
+
+    private void updateButtonsForExecute() {
+        if (redoButton != null) {
+            redoButton.setDisable(true);
+            redoDeque.clear();
+        }
+        if (undoButton != null) {
+            if (!undoDeque.isEmpty()) {
+                undoButton.setDisable(false);
+            }
         }
     }
 
@@ -177,8 +191,9 @@ public class History {
             }
             undoDeque.push(action);
             redoDeque.clear();
-            if (redoButton != null)
+            if (redoButton != null) {
                 redoButton.setDisable(true);
+            }
         } finally {
             lock.unlock();
         }
