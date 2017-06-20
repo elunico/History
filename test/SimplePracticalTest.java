@@ -22,16 +22,14 @@ import java.util.Random;
 
 public class SimplePracticalTest extends Application {
 
+    public final History history = new History();
     public Button redo = new Button("Redo");
     public Button undo = new Button("Undo");
 
-    public static void main(String[] args) {
-        launch();
-    }
+    public static void main(String[] args) { launch(); }
 
     @Override
-    public void start(Stage primaryStage) throws Exception
-    {
+    public void start(Stage primaryStage) throws Exception {
         Label l = new Label();
         TextField t = new TextField();
         Button button = new Button("Do something");
@@ -39,8 +37,8 @@ public class SimplePracticalTest extends Application {
         Button test = new Button("Do Something else");
         Button dangerousButton = new Button("DO NOT CLICK ME");
 
-        History.getInstance().registerUndoButton(undo);
-        History.getInstance().registerRedoButton(redo);
+        history.registerUndoButton(undo);
+        history.registerRedoButton(redo);
 
         dangerousButton.setOnAction( event -> {
             Action a = new Action() {
@@ -66,7 +64,7 @@ public class SimplePracticalTest extends Application {
                     execute();
                 }
             };
-            History.getInstance().registerActionAndExecute(a);
+            history.registerActionAndExecute(a);
         });
 
         test.setOnAction(event ->
@@ -99,7 +97,7 @@ public class SimplePracticalTest extends Application {
                     execute();
                 }
             };
-            History.getInstance().registerActionAndExecute(a);
+            history.registerActionAndExecute(a);
         });
 
         ccb.setOnAction(event ->
@@ -133,7 +131,7 @@ public class SimplePracticalTest extends Application {
                     l.setTextFill(recolor);
                 }
             };
-            History.getInstance().registerActionAndExecute(a);
+            history.registerActionAndExecute(a);
 
         });
 
@@ -167,13 +165,13 @@ public class SimplePracticalTest extends Application {
                     l.setText(redoData);
                 }
             };
-            History.getInstance().registerActionAndExecute(a);
+            history.registerActionAndExecute(a);
         });
 
         // ACQUIRES NO LOCK
-        undo.setOnAction(event -> History.getInstance().undo());
+        undo.setOnAction(event -> history.undo());
 
-        redo.setOnAction(event -> History.getInstance().redo());
+        redo.setOnAction(event -> history.redo());
 
         VBox b = new VBox(l);
         b.setPrefHeight(300);
@@ -206,7 +204,7 @@ public class SimplePracticalTest extends Application {
                         execute();
                     }
                 };
-                History.getInstance().registerActionAndExecute(a);
+                history.registerActionAndExecute(a);
             }
 
         });

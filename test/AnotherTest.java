@@ -14,6 +14,8 @@ import javafx.stage.Stage;
  */
 public class AnotherTest extends Application {
 
+    public final History history = new History();
+
     public static void main(String[] args) {
         launch();
     }
@@ -26,8 +28,8 @@ public class AnotherTest extends Application {
         Button undo = new Button("undo");
         Button redo = new Button("redo");
 
-        History.getInstance().registerUndoButton(undo);
-        History.getInstance().registerRedoButton(redo);
+        history.registerUndoButton(undo);
+        history.registerRedoButton(redo);
 
         b.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -56,7 +58,7 @@ public class AnotherTest extends Application {
                     }
                 };
 
-                History.getInstance().registerActionAndExecute(a);
+                history.registerActionAndExecute(a);
 
             }
         });

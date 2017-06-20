@@ -56,29 +56,6 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class History {
 
-    private static volatile History instance;
-    private static Lock instanceLock = new ReentrantLock();
-
-    /**
-     * Return the singleton instance of History used throughout the life time
-     * of the program. Thread safe method only locks if the instance is null
-     *
-     * @return the singleton History instance
-     */
-    public static History getInstance() {
-        if (instance == null) {
-            instanceLock.lock();
-            try {
-                if (instance != null) {
-                    return instance;
-                }
-                instance = new History();
-            } finally {
-                instanceLock.unlock();
-            }
-        }
-        return instance;
-    }
     private int limit = -1;
     private LinkedBlockingDeque<Action> undoDeque = new LinkedBlockingDeque<>();
     private LinkedBlockingDeque<Action> redoDeque = new LinkedBlockingDeque<>();
@@ -86,8 +63,7 @@ public class History {
     private Button undoButton;
     private Button redoButton;
 
-    private History() {
-    }
+    public  History() { }
 
     /**
      * Return the maximum possible number of undos and redos to store. Undos and
