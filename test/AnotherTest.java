@@ -32,36 +32,33 @@ public class AnotherTest extends Application {
         history.registerUndoButton(undo);
         history.registerRedoButton(redo);
 
-        b.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                Action a = new Action() {
+        b.setOnAction(event -> {
+            Action a = new Action() {
 
-                    String old;
-                    String neue;
+                String old;
+                String neue;
 
-                    @Override
-                    public void execute() {
-                        old = b.getText();
-                        b.setText(b.getText() + " clicked");
-                    }
+                @Override
+                public void execute() {
+                    old = b.getText();
+                    b.setText(b.getText() + " clicked");
+                }
 
-                    @Override
-                    public void undo() {
-                        neue = b.getText();
-                        b.setText(old);
-                    }
+                @Override
+                public void undo() {
+                    neue = b.getText();
+                    b.setText(old);
+                }
 
-                    @Override
-                    public void redo() {
-                        old = b.getText();
-                        b.setText(neue);
-                    }
-                };
+                @Override
+                public void redo() {
+                    old = b.getText();
+                    b.setText(neue);
+                }
+            };
 
-                history.registerActionAndExecute(a);
+            history.registerActionAndExecute(a);
 
-            }
         });
 
         main.getChildren().addAll(b, undo, redo);

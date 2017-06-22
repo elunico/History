@@ -1,5 +1,6 @@
 package tom.history;
 
+import org.jetbrains.annotations.*;
 import javafx.scene.control.Button;
 
 import java.util.concurrent.LinkedBlockingDeque;
@@ -7,10 +8,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * tom.history.History is a singleton class used to interface with Undo and Redo using
- * the {@link Action} interface. Getting the instance of tom.history.History uses {@link #getInstance()}
- * and is the only way to interface with the tom.history.History class since the constructor is
- * private and there are no other static methods
  * <p>
  * To use this class, is meant to be very simple. It is not the strongest or most
  * complex implementation of Undo and Redo, but it is capable. First you must
@@ -58,14 +55,30 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class History {
 
-    private int limit = -1;
+    private int limit;
     private LinkedBlockingDeque<Action> undoDeque = new LinkedBlockingDeque<>();
     private LinkedBlockingDeque<Action> redoDeque = new LinkedBlockingDeque<>();
     private Lock lock = new ReentrantLock();
     private Button undoButton;
     private Button redoButton;
 
-    public History() { }
+    public History() {
+        this(-1, null, null);
+    }
+
+    public History(int limit, @Nullable Button undoButton, @Nullable Button redoButton) {
+        this.limit = limit;
+        this.undoButton = undoButton;
+        this.redoButton = redoButton;
+    }
+
+    public History(int limit) {
+        this(limit, null, null);
+    }
+
+    public History(@Nullable Button undoButton, @Nullable Button redoButton) {
+        this(-1, undoButton, redoButton);
+    }
 
     /**
      * Return the maximum possible number of undos and redos to store. Undos and
@@ -101,7 +114,7 @@ public class History {
      * @param button the button to be treated as the undo button by the tom.history.History
      *               class
      */
-    public void registerUndoButton(Button button) {
+    public void registerUndoButton(@NotNull Button button) {
         undoButton = button;
     }
 
@@ -112,7 +125,7 @@ public class History {
      * @param button
      * @see #registerUndoButton(Button)
      */
-    public void registerRedoButton(Button button) {
+    public void registerRedoButton(@NotNull Button button) {
         redoButton = button;
     }
 
@@ -127,7 +140,7 @@ public class History {
      * @param action the action that will be registered and executed
      * @see #registerAction(Action)
      */
-    public void registerActionAndExecute(Action action) {
+    public void registerActionAndExecute(@NotNull Action action) {
         lock.lock();
         try {
             registerAction(action);
@@ -161,7 +174,7 @@ public class History {
      * @param action the action to be stored
      * @see #registerActionAndExecute(Action)
      */
-    public void registerAction(Action action) {
+    public void registerAction(@NotNull Action action) {
         lock.lock();
         try {
             if (limit > 0 && undoDeque.size() >= limit) {
