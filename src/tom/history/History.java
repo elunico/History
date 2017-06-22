@@ -1,6 +1,8 @@
 package tom.history;
 
 import javafx.scene.control.Button;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.locks.Lock;
@@ -125,7 +127,7 @@ public class History {
      * @param button the button to be treated as the undo button by the tom.history.History
      *               class
      */
-    public void registerUndoButton(Button button) {
+    public void registerUndoButton(@Nullable Button button) {
         undoButton = button;
     }
 
@@ -136,7 +138,7 @@ public class History {
      * @param button
      * @see #registerUndoButton(Button)
      */
-    public void registerRedoButton(Button button) {
+    public void registerRedoButton(@Nullable Button button) {
         redoButton = button;
     }
 
@@ -151,7 +153,7 @@ public class History {
      * @param action the action that will be registered and executed
      * @see #registerAction(Action)
      */
-    public void registerActionAndExecute(Action action) {
+    public void registerActionAndExecute(@NotNull Action action) {
         lock.lock();
         try {
             registerAction(action);
@@ -201,7 +203,7 @@ public class History {
      * @param action the action to be stored
      * @see #registerActionAndExecute(Action)
      */
-    public void registerAction(Action action) {
+    public void registerAction(@NotNull Action action) {
         lock.lock();
         try {
             if (limit > 0 && undoDeque.size() >= limit) {
