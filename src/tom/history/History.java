@@ -101,6 +101,11 @@ public class History {
      * @see #getLimit()
      */
     public void setLimit(int limit) {
+        if (limit == 0) {
+            throw new IllegalArgumentException("Limit for History must be " +
+                                               "either greater than 0 or -1 " +
+                                               "for no limit");
+        }
         this.limit = limit;
     }
 
