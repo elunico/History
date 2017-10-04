@@ -1,7 +1,8 @@
 package tom.history;
 
-import org.jetbrains.annotations.*;
 import javafx.scene.control.Button;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.locks.Lock;
@@ -55,10 +56,10 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class History {
 
+    private final LinkedBlockingDeque<Action> undoDeque = new LinkedBlockingDeque<>();
+    private final LinkedBlockingDeque<Action> redoDeque = new LinkedBlockingDeque<>();
+    private final Lock lock = new ReentrantLock();
     private int limit;
-    private LinkedBlockingDeque<Action> undoDeque = new LinkedBlockingDeque<>();
-    private LinkedBlockingDeque<Action> redoDeque = new LinkedBlockingDeque<>();
-    private Lock lock = new ReentrantLock();
     private Button undoButton;
     private Button redoButton;
 
