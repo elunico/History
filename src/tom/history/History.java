@@ -216,21 +216,21 @@ public class History {
 
     /**
      * This method retrieves the most recently registered {@link Action} that
-     * has not already been undone by this method and calles the {@link Action#undo()}
+     * has not already been undone by this method and calls the {@link Action#undo()}
      * method on it
      * <p>
      * Note that this method calls {@link Lock#lock()} and will wait for all
      * other threads to not be undoing, redoing, or registering an action before
      * it registers the action
      *
-     * @return true if the undo was called or false if there was nothing to undo,
-     * that is if the undo stack was empty
+     * @throws NothingToUndoException if the undo deque is empty and there is
+     *                                nothing to undo
      */
-    public boolean undo( ) {
+    public void undo( ) throws NothingToUndoException {
         lock.lock( );
         try {
             if ( undoDeque.isEmpty( ) ) {
-                return false;
+                throw new NothingToUndoException( "Undo deque is empty: Nothing to undo" );
             } else {
                 Action a = undoDeque.pop( );
                 a.undo( );
@@ -239,7 +239,6 @@ public class History {
                 }
                 redoDeque.push( a );
                 updateButtonsForUndo( );
-                return true;
             }
         } finally {
             lock.unlock( );
@@ -259,9 +258,9 @@ public class History {
 
     /**
      * This method retrieves the most recently undone {@link Action} that
-     * has not already been redone by this method and calles the {@link Action#redo()}
+     * has not already been redone by this method and calls the {@link Action#redo()}
      * method on it. Note that an action must be undone by calling
-     * {@link #undo()} first. Note also, that any and everytime a new action
+     * {@link #undo()} first. Note also, that any and every time a new action
      * is registered using either {@link #registerAction(Action)} or
      * {@link #registerActionAndExecute(Action)} all actions saved for redoing are
      * cleared. That is the redo stack is cleared by calling {@link LinkedBlockingDeque#clear()}
@@ -270,14 +269,13 @@ public class History {
      * other threads to not be undoing, redoing, or registering an action before
      * it registers the action
      *
-     * @return true if the redo was called or false if there was nothing to undo,
-     * that is if the undo stack was empty
+     * @throws NothingToRedoException if the redo deque is empty and there is nothing to redo
      */
-    public boolean redo( ) {
+    public void redo( ) throws NothingToRedoException {
         lock.lock( );
         try {
             if ( redoDeque.isEmpty( ) ) {
-                return false;
+                throw new NothingToRedoException( "Redo deque is empty: Nothing to redo" );
             } else {
                 Action a = redoDeque.pop( );
                 a.redo( );
@@ -286,7 +284,6 @@ public class History {
                 }
                 undoDeque.push( a );
                 updateButtonsForRedo( );
-                return true;
             }
         } finally {
             lock.unlock( );

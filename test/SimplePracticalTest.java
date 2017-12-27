@@ -26,227 +26,228 @@ import java.util.Random;
 
 public class SimplePracticalTest extends Application {
 
-    public final History history = new History();
-    public Button redo = new Button("Redo");
-    public Button undo = new Button("Undo");
+    public final History history = new History( );
+    public Button redo = new Button( "Redo" );
+    public Button undo = new Button( "Undo" );
 
-    public static void main(String[] args) { launch(); }
+    public static void main( String[] args ) { launch( ); }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        Label l = new Label();
-        TextField t = new TextField();
-        Button button = new Button("Do something");
-        Button ccb = new Button("Change Color");
-        Button test = new Button("Do Something else");
-        Button dangerousButton = new Button("DO NOT CLICK ME");
+    public void start( Stage primaryStage ) throws Exception {
+        Label l = new Label( );
+        TextField t = new TextField( );
+        Button button = new Button( "Do something" );
+        Button ccb = new Button( "Change Color" );
+        Button test = new Button( "Do Something else" );
+        Button dangerousButton = new Button( "DO NOT CLICK ME" );
 
-        history.registerUndoButton(undo);
-        history.registerRedoButton(redo);
+        history.registerUndoButton( undo );
+        history.registerRedoButton( redo );
 
-        dangerousButton.setOnAction(event -> {
-            Action a = new Action() {
+        dangerousButton.setOnAction( event -> {
+            Action a = new Action( ) {
                 @Override
-                public void execute() {
+                public void execute( ) {
                     /* Do nothing */
                 }
 
                 @Override
-                public void undo() {
+                public void undo( ) {
                     // This action waits FOREVER when undoing
-                    synchronized (this) {
+                    synchronized ( this ) {
                         try {
-                            this.wait();
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            this.wait( );
+                        } catch ( InterruptedException e ) {
+                            e.printStackTrace( );
                         }
                     }
                 }
 
                 @Override
-                public void redo() {
-                    execute();
+                public void redo( ) {
+                    execute( );
                 }
             };
-            history.registerActionAndExecute(a);
-        });
+            history.registerActionAndExecute( a );
+        } );
 
-        test.setOnAction(event ->
-        {
-            Action a = new Action() {
+        test.setOnAction( event ->
+                          {
+                              Action a = new Action( ) {
 
-                double oldHeight;
-                double oldWidth;
+                                  double oldHeight;
+                                  double oldWidth;
 
-                @Override
-                public void execute()
-                {
-                    oldHeight = primaryStage.getHeight();
-                    oldWidth = primaryStage.getWidth();
+                                  @Override
+                                  public void execute( )
+                                  {
+                                      oldHeight = primaryStage.getHeight( );
+                                      oldWidth = primaryStage.getWidth( );
 
-                    primaryStage.setHeight(oldHeight * 1.2);
-                    primaryStage.setWidth(oldWidth * 1.2);
-                }
+                                      primaryStage.setHeight( oldHeight * 1.2 );
+                                      primaryStage.setWidth( oldWidth * 1.2 );
+                                  }
 
-                @Override
-                public void undo()
-                {
-                    primaryStage.setWidth(oldWidth);
-                    primaryStage.setHeight(oldHeight);
-                    System.out.println(Arrays.toString(Thread.currentThread()
-                                                             .getStackTrace()));
+                                  @Override
+                                  public void undo( )
+                                  {
+                                      primaryStage.setWidth( oldWidth );
+                                      primaryStage.setHeight( oldHeight );
+                                      System.out.println( Arrays.toString( Thread
+                                                                             .currentThread( )
+                                                                             .getStackTrace( ) ) );
 
-                }
+                                  }
 
-                @Override
-                public void redo()
-                {
-                    execute();
-                }
-            };
-            history.registerActionAndExecute(a);
-        });
+                                  @Override
+                                  public void redo( )
+                                  {
+                                      execute( );
+                                  }
+                              };
+                              history.registerActionAndExecute( a );
+                          } );
 
-        ccb.setOnAction(event ->
-        {
-            Action a = new Action() {
+        ccb.setOnAction( event ->
+                         {
+                             Action a = new Action( ) {
 
-                private Paint oldColor;
-                private Paint recolor;
+                                 private Paint oldColor;
+                                 private Paint recolor;
 
-                @Override
-                public void execute()
-                {
-                    oldColor = l.getTextFill();
-                    Random r = new Random();
-                    l.setTextFill(
-                      Color.color(r.nextDouble(), r.nextDouble(),
-                        r.nextDouble()));
-                    recolor = l.getTextFill();
+                                 @Override
+                                 public void execute( )
+                                 {
+                                     oldColor = l.getTextFill( );
+                                     Random r = new Random( );
+                                     l.setTextFill(
+                                       Color.color( r.nextDouble( ), r.nextDouble( ),
+                                                    r.nextDouble( ) ) );
+                                     recolor = l.getTextFill( );
 
-                }
+                                 }
 
-                @Override
-                public void undo()
-                {
-                    l.setTextFill(oldColor);
-                }
+                                 @Override
+                                 public void undo( )
+                                 {
+                                     l.setTextFill( oldColor );
+                                 }
 
-                @Override
-                public void redo()
-                {
-                    l.setTextFill(recolor);
-                }
-            };
-            history.registerActionAndExecute(a);
+                                 @Override
+                                 public void redo( )
+                                 {
+                                     l.setTextFill( recolor );
+                                 }
+                             };
+                             history.registerActionAndExecute( a );
 
-        });
+                         } );
 
 
-        button.setOnAction(event ->
-        {
-            Action a = new Action() {
+        button.setOnAction( event ->
+                            {
+                                Action a = new Action( ) {
 
-                private String previous;
-                private String redoData;
+                                    private String previous;
+                                    private String redoData;
 
-                @Override
-                public void execute()
-                {
-                    previous = l.getText();
-                    String text = t.getText();
-                    l.setText(l.getText() + "\n" + text);
-                    t.clear();
-                    t.requestFocus();
-                    redoData = l.getText();
-                }
+                                    @Override
+                                    public void execute( )
+                                    {
+                                        previous = l.getText( );
+                                        String text = t.getText( );
+                                        l.setText( l.getText( ) + "\n" + text );
+                                        t.clear( );
+                                        t.requestFocus( );
+                                        redoData = l.getText( );
+                                    }
 
-                @Override
-                public void undo()
-                {
-                    l.setText(previous);
-                }
+                                    @Override
+                                    public void undo( )
+                                    {
+                                        l.setText( previous );
+                                    }
 
-                public void redo()
-                {
-                    l.setText(redoData);
-                }
-            };
-            history.registerActionAndExecute(a);
-        });
+                                    public void redo( )
+                                    {
+                                        l.setText( redoData );
+                                    }
+                                };
+                                history.registerActionAndExecute( a );
+                            } );
 
         // ACQUIRES NO LOCK
-        undo.setOnAction(event -> history.undo());
+        undo.setOnAction( event -> history.undo( ) );
 
-        redo.setOnAction(event -> history.redo());
+        redo.setOnAction( event -> history.redo( ) );
 
-        VBox b = new VBox(l);
-        b.setPrefHeight(300);
-        HBox buttonBox = new HBox(undo, redo, button, ccb, dangerousButton, test);
-        VBox v = new VBox(b, t, buttonBox);
+        VBox b = new VBox( l );
+        b.setPrefHeight( 300 );
+        HBox buttonBox = new HBox( undo, redo, button, ccb, dangerousButton, test );
+        VBox v = new VBox( b, t, buttonBox );
 
-        primaryStage.addEventFilter(KeyEvent.KEY_PRESSED, event ->
+        primaryStage.addEventFilter( KeyEvent.KEY_PRESSED, event ->
         {
-            if (event.getCode() == KeyCode.EQUALS && event.isShiftDown()) {
-                l.requestFocus();
-                Action a = new Action() {
+            if ( event.getCode( ) == KeyCode.EQUALS && event.isShiftDown( ) ) {
+                l.requestFocus( );
+                Action a = new Action( ) {
 
                     private double previousSize;
 
                     @Override
-                    public void execute() {
-                        previousSize = l.getFont().getSize();
-                        l.setFont(Font.font(l.getFont().getFamily(),
-                          previousSize * 1.25));
+                    public void execute( ) {
+                        previousSize = l.getFont( ).getSize( );
+                        l.setFont( Font.font( l.getFont( ).getFamily( ),
+                                              previousSize * 1.25 ) );
                     }
 
                     @Override
-                    public void undo() {
-                        l.setFont(Font.font(l.getFont()
-                                             .getFamily(), previousSize));
+                    public void undo( ) {
+                        l.setFont( Font.font( l.getFont( )
+                                               .getFamily( ), previousSize ) );
                     }
 
                     @Override
-                    public void redo() {
-                        execute();
+                    public void redo( ) {
+                        execute( );
                     }
                 };
-                history.registerActionAndExecute(a);
+                history.registerActionAndExecute( a );
             }
 
-        });
+        } );
 
         /*
         Enter being a filter results in new lines being appended to input
         Enter being a handler works as expected
          */
-        primaryStage.addEventHandler(KeyEvent.KEY_PRESSED, event ->
+        primaryStage.addEventHandler( KeyEvent.KEY_PRESSED, event ->
         {
-            if (event.getCode() == KeyCode.ENTER) {
-                button.fire();
+            if ( event.getCode( ) == KeyCode.ENTER ) {
+                button.fire( );
             }
-        });
+        } );
 
         /*
         Either of these methods being a handler renders them apparently ineffective
         however, as a filter they work properly
          */
-        primaryStage.addEventFilter(KeyEvent.KEY_PRESSED, event ->
+        primaryStage.addEventFilter( KeyEvent.KEY_PRESSED, event ->
         {
-            if (JavaFXUtilsKt.isUndoEvent(event)) {
-                undo.fire();
+            if ( JavaFXUtilsKt.isUndoEvent( event ) ) {
+                undo.fire( );
             }
-        });
+        } );
 
-        primaryStage.addEventFilter(KeyEvent.KEY_PRESSED, event ->
+        primaryStage.addEventFilter( KeyEvent.KEY_PRESSED, event ->
         {
-            if (JavaFXUtilsKt.isRedoEvent(event)) {
-                redo.fire();
+            if ( JavaFXUtilsKt.isRedoEvent( event ) ) {
+                redo.fire( );
             }
-        });
+        } );
 
-        primaryStage.setScene(new Scene(v));
-        primaryStage.show();
+        primaryStage.setScene( new Scene( v ) );
+        primaryStage.show( );
 
     }
 }
