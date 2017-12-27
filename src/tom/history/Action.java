@@ -38,7 +38,7 @@ public interface Action {
      * it is logically sound to do so, consist of only a single line: a call to
      * execute
      */
-    void execute();
+    void execute( );
 
     /**
      * Called in order to undo the action, restoring all things to their
@@ -48,7 +48,7 @@ public interface Action {
      * <p>
      * Also called by {@link History#undo()}
      */
-    void undo();
+    void undo( );
 
     /**
      * Called in order to redo the action. This can sometimes be implemented
@@ -60,5 +60,5 @@ public interface Action {
      *
      * @see History
      */
-    void redo();
+    void redo( );
 }

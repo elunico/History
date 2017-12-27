@@ -13,13 +13,15 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import tom.history.Action;
 import tom.history.History;
+import tom.utils.javafx.JavaFXUtilsKt;
 
+import java.util.Arrays;
 import java.util.Random;
 
 /**
  * @author Thomas Povinelli
- *         Created 2/12/17
- *         In UndoTest
+ * Created 2/12/17
+ * In UndoTest
  */
 
 public class SimplePracticalTest extends Application {
@@ -42,7 +44,7 @@ public class SimplePracticalTest extends Application {
         history.registerUndoButton(undo);
         history.registerRedoButton(redo);
 
-        dangerousButton.setOnAction( event -> {
+        dangerousButton.setOnAction(event -> {
             Action a = new Action() {
                 @Override
                 public void execute() {
@@ -91,6 +93,9 @@ public class SimplePracticalTest extends Application {
                 {
                     primaryStage.setWidth(oldWidth);
                     primaryStage.setHeight(oldHeight);
+                    System.out.println(Arrays.toString(Thread.currentThread()
+                                                             .getStackTrace()));
+
                 }
 
                 @Override
@@ -197,8 +202,8 @@ public class SimplePracticalTest extends Application {
 
                     @Override
                     public void undo() {
-                        l.setFont(
-                          Font.font(l.getFont().getFamily(), previousSize));
+                        l.setFont(Font.font(l.getFont()
+                                             .getFamily(), previousSize));
                     }
 
                     @Override
@@ -228,18 +233,14 @@ public class SimplePracticalTest extends Application {
          */
         primaryStage.addEventFilter(KeyEvent.KEY_PRESSED, event ->
         {
-            if (event.isMetaDown() && event.getCode() == KeyCode.Z &&
-                !event.isShiftDown())
-            {
+            if (JavaFXUtilsKt.isUndoEvent(event)) {
                 undo.fire();
             }
         });
 
         primaryStage.addEventFilter(KeyEvent.KEY_PRESSED, event ->
         {
-            if (event.isMetaDown() && event.getCode() == KeyCode.Z &&
-                event.isShiftDown())
-            {
+            if (JavaFXUtilsKt.isRedoEvent(event)) {
                 redo.fire();
             }
         });

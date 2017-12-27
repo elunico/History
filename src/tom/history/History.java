@@ -1,7 +1,8 @@
 package tom.history;
 
-import org.jetbrains.annotations.*;
 import javafx.scene.control.Button;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.locks.Lock;
@@ -56,28 +57,30 @@ import java.util.concurrent.locks.ReentrantLock;
 public class History {
 
     private int limit;
-    private LinkedBlockingDeque<Action> undoDeque = new LinkedBlockingDeque<>();
-    private LinkedBlockingDeque<Action> redoDeque = new LinkedBlockingDeque<>();
-    private Lock lock = new ReentrantLock();
+    private LinkedBlockingDeque<Action> undoDeque = new LinkedBlockingDeque<>( );
+    private LinkedBlockingDeque<Action> redoDeque = new LinkedBlockingDeque<>( );
+    private Lock lock = new ReentrantLock( );
     private Button undoButton;
     private Button redoButton;
 
-    public History() {
-        this(-1, null, null);
+    public History( ) {
+        this( -1, null, null );
     }
 
-    public History(int limit, @Nullable Button undoButton, @Nullable Button redoButton) {
+    public History( int limit, @Nullable Button undoButton,
+                    @Nullable Button redoButton )
+    {
         this.limit = limit;
         this.undoButton = undoButton;
         this.redoButton = redoButton;
     }
 
-    public History(int limit) {
-        this(limit, null, null);
+    public History( int limit ) {
+        this( limit, null, null );
     }
 
-    public History(@Nullable Button undoButton, @Nullable Button redoButton) {
-        this(-1, undoButton, redoButton);
+    public History( @Nullable Button undoButton, @Nullable Button redoButton ) {
+        this( -1, undoButton, redoButton );
     }
 
     /**
@@ -90,7 +93,7 @@ public class History {
      * @return the maximum number of undos or redos allowed or -1 if such a limit
      * was never set
      */
-    public int getLimit() {
+    public int getLimit( ) {
         return limit;
     }
 
@@ -100,11 +103,11 @@ public class History {
      * @param limit the limit of the number of undos and redos to store
      * @see #getLimit()
      */
-    public void setLimit(int limit) {
-        if (limit == 0) {
-            throw new IllegalArgumentException("Limit for History must be " +
-                                               "either greater than 0 or -1 " +
-                                               "for no limit");
+    public void setLimit( int limit ) {
+        if ( limit == 0 ) {
+            throw new IllegalArgumentException( "Limit for History must be " +
+                                                "either greater than 0 or -1 " +
+                                                "for no limit" );
         }
         this.limit = limit;
     }
@@ -119,7 +122,7 @@ public class History {
      * @param button the button to be treated as the undo button by the tom.history.History
      *               class
      */
-    public void registerUndoButton(@NotNull Button button) {
+    public void registerUndoButton( @NotNull Button button ) {
         undoButton = button;
     }
 
@@ -130,7 +133,7 @@ public class History {
      * @param button
      * @see #registerUndoButton(Button)
      */
-    public void registerRedoButton(@NotNull Button button) {
+    public void registerRedoButton( @NotNull Button button ) {
         redoButton = button;
     }
 
@@ -145,25 +148,25 @@ public class History {
      * @param action the action that will be registered and executed
      * @see #registerAction(Action)
      */
-    public void registerActionAndExecute(@NotNull Action action) {
-        lock.lock();
+    public void registerActionAndExecute( @NotNull Action action ) {
+        lock.lock( );
         try {
-            registerAction(action);
-            action.execute();
-            updateButtonsForExecute();
+            registerAction( action );
+            action.execute( );
+            updateButtonsForExecute( );
         } finally {
-            lock.unlock();
+            lock.unlock( );
         }
     }
 
-    private void updateButtonsForExecute() {
-        if (redoButton != null) {
-            redoButton.setDisable(true);
-            redoDeque.clear();
+    private void updateButtonsForExecute( ) {
+        if ( redoButton != null ) {
+            redoButton.setDisable( true );
+            redoDeque.clear( );
         }
-        if (undoButton != null) {
-            if (!undoDeque.isEmpty()) {
-                undoButton.setDisable(false);
+        if ( undoButton != null ) {
+            if ( !undoDeque.isEmpty( ) ) {
+                undoButton.setDisable( false );
             }
         }
     }
@@ -179,19 +182,19 @@ public class History {
      * @param action the action to be stored
      * @see #registerActionAndExecute(Action)
      */
-    public void registerAction(@NotNull Action action) {
-        lock.lock();
+    public void registerAction( @NotNull Action action ) {
+        lock.lock( );
         try {
-            if (limit > 0 && undoDeque.size() >= limit) {
-                undoDeque.removeLast();
+            if ( limit > 0 && undoDeque.size( ) >= limit ) {
+                undoDeque.removeLast( );
             }
-            undoDeque.push(action);
-            redoDeque.clear();
-            if (redoButton != null) {
-                redoButton.setDisable(true);
+            undoDeque.push( action );
+            redoDeque.clear( );
+            if ( redoButton != null ) {
+                redoButton.setDisable( true );
             }
         } finally {
-            lock.unlock();
+            lock.unlock( );
         }
     }
 
@@ -201,13 +204,13 @@ public class History {
      * of the {@link #registerActionAndExecute(Action)} method, you can call this
      * method after to execute the <strong>most recently registered action</strong>
      */
-    public void executeMostRecentAction() {
-        lock.lock();
+    public void executeMostRecentAction( ) {
+        lock.lock( );
         try {
-            undoDeque.peekFirst().execute();
-            updateButtonsForExecute();
+            undoDeque.peekFirst( ).execute( );
+            updateButtonsForExecute( );
         } finally {
-            lock.unlock();
+            lock.unlock( );
         }
     }
 
@@ -223,34 +226,34 @@ public class History {
      * @return true if the undo was called or false if there was nothing to undo,
      * that is if the undo stack was empty
      */
-    public boolean undo() {
-        lock.lock();
+    public boolean undo( ) {
+        lock.lock( );
         try {
-            if (undoDeque.isEmpty()) {
+            if ( undoDeque.isEmpty( ) ) {
                 return false;
             } else {
-                Action a = undoDeque.pop();
-                a.undo();
-                if (limit > 0 && redoDeque.size() >= limit) {
-                    redoDeque.removeLast();
+                Action a = undoDeque.pop( );
+                a.undo( );
+                if ( limit > 0 && redoDeque.size( ) >= limit ) {
+                    redoDeque.removeLast( );
                 }
-                redoDeque.push(a);
-                updateButtonsForUndo();
+                redoDeque.push( a );
+                updateButtonsForUndo( );
                 return true;
             }
         } finally {
-            lock.unlock();
+            lock.unlock( );
         }
     }
 
-    private void updateButtonsForUndo() {
-        if (undoDeque.isEmpty()) {
-            if (undoButton != null) {
-                undoButton.setDisable(true);
+    private void updateButtonsForUndo( ) {
+        if ( undoDeque.isEmpty( ) ) {
+            if ( undoButton != null ) {
+                undoButton.setDisable( true );
             }
         }
-        if (redoButton != null) {
-            redoButton.setDisable(false);
+        if ( redoButton != null ) {
+            redoButton.setDisable( false );
         }
     }
 
@@ -270,34 +273,34 @@ public class History {
      * @return true if the redo was called or false if there was nothing to undo,
      * that is if the undo stack was empty
      */
-    public boolean redo() {
-        lock.lock();
+    public boolean redo( ) {
+        lock.lock( );
         try {
-            if (redoDeque.isEmpty()) {
+            if ( redoDeque.isEmpty( ) ) {
                 return false;
             } else {
-                Action a = redoDeque.pop();
-                a.redo();
-                if (limit > 0 && undoDeque.size() >= limit) {
-                    undoDeque.removeLast();
+                Action a = redoDeque.pop( );
+                a.redo( );
+                if ( limit > 0 && undoDeque.size( ) >= limit ) {
+                    undoDeque.removeLast( );
                 }
-                undoDeque.push(a);
-                updateButtonsForRedo();
+                undoDeque.push( a );
+                updateButtonsForRedo( );
                 return true;
             }
         } finally {
-            lock.unlock();
+            lock.unlock( );
         }
     }
 
-    private void updateButtonsForRedo() {
-        if (redoDeque.isEmpty()) {
-            if (redoButton != null) {
-                redoButton.setDisable(true);
+    private void updateButtonsForRedo( ) {
+        if ( redoDeque.isEmpty( ) ) {
+            if ( redoButton != null ) {
+                redoButton.setDisable( true );
             }
         }
-        if (undoButton != null) {
-            undoButton.setDisable(false);
+        if ( undoButton != null ) {
+            undoButton.setDisable( false );
         }
     }
 }
