@@ -102,7 +102,7 @@ public class History {
      * @see #getLimit()
      */
     public void setLimit(int limit) {
-        if (limit == 0) {
+        if (limit <= 0 && limit != -1) {
             throw new IllegalArgumentException("Limit for History must be " +
                                                "either greater than 0 or -1 " +
                                                "for no limit");
@@ -133,6 +133,21 @@ public class History {
      */
     public void registerRedoButton(@NotNull Button button) {
         redoButton = button;
+    }
+
+    /**
+     * Used to stop associating a particular button with the state of redo
+     */
+    public void deregisterUndoButton() {
+        undoButton = null;
+    }
+
+
+    /**
+     * Used to stop associating a particular button with the state of undo
+     */
+    public void deregisterRedoButton() {
+        redoButton = null;
     }
 
     /**
