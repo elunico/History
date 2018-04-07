@@ -1,5 +1,7 @@
 package tom.history;
 
+import org.jetbrains.annotations.Nullable;
+
 /**
  * This interface is used by {@link History} to implement undo and redo
  * This class functions <i>similar</i> to a functional interface except that
@@ -38,7 +40,7 @@ public interface Action {
      * it is logically sound to do so, consist of only a single line: a call to
      * execute
      */
-    void execute( );
+    void execute() throws AbortActionException;
 
     /**
      * Called in order to undo the action, restoring all things to their
@@ -48,7 +50,7 @@ public interface Action {
      * <p>
      * Also called by {@link History#undo()}
      */
-    void undo( );
+    void undo();
 
     /**
      * Called in order to redo the action. This can sometimes be implemented
@@ -60,5 +62,18 @@ public interface Action {
      *
      * @see History
      */
-    void redo( );
+    void redo();
+
+    /**
+     * This method is called if the {@link #execute()} method throws an {@link AbortActionException}
+     * The {@link AbortActionException} must be constructed with a cause
+     * The purpose of this method is to deal with exceptional cases in the execute method
+     * and roll back the changes that have been made by execute if needed
+     * Notice, that the {@link History#executeMostRecentAction()} method
+     * only tryes and catches {@link AbortActionException} so any other thrown exceptions
+     * are propogated. This can be done manually also using the rollback method
+     *
+     * @throws Exception if you choose to rethrow the cause
+     */
+    void rollback(@Nullable AbortActionException cause) throws Exception;
 }

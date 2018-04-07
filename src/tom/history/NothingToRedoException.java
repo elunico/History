@@ -7,25 +7,25 @@ package tom.history;
  */
 public class NothingToRedoException extends NoSuchActionException {
     public NothingToRedoException( ) {
-        super( );
+        super();
     }
 
-    public NothingToRedoException( String message ) {
-        super( message );
+    public NothingToRedoException(String message) {
+        super(message);
     }
 
-    public NothingToRedoException( String message, Throwable cause ) {
-        super( message, cause );
+    public NothingToRedoException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public NothingToRedoException( Throwable cause ) {
-        super( cause );
+    public NothingToRedoException(Throwable cause) {
+        super(cause);
     }
 
-    public NothingToRedoException( String message, Throwable cause,
-                                   boolean enableSuppression,
-                                   boolean writableStackTrace )
+    public NothingToRedoException(String message, Throwable cause,
+                                  boolean enableSuppression,
+                                  boolean writableStackTrace)
     {
-        super( message, cause, enableSuppression, writableStackTrace );
+        super(message, cause, enableSuppression, writableStackTrace);
     }
 }
