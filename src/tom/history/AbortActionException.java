@@ -12,46 +12,47 @@ import java.util.Optional;
  */
 public class AbortActionException extends Exception {
 
-    public static class Flags {
-        private final int point;
-        private final String pointName;
+  public static class Flags {
+    private final int point;
+    private final String pointName;
 
-        public Flags(int point, String pointName) {
-            this.point = point;
-            this.pointName = pointName;
-        }
-
-        public int getPoint( ) {
-            return point;
-        }
-
-        public String getPointName( ) {
-            return pointName;
-        }
+    public Flags(int point, String pointName) {
+      this.point = point;
+      this.pointName = pointName;
     }
 
-    private final Flags theFlags;
-
-    public AbortActionException(String msg, Throwable cause,
-                                @Nullable Flags flags)
-    {
-        super(msg, cause);
-        this.theFlags = flags;
+    public int getPoint() {
+      return point;
     }
 
-    @NotNull
-    public Optional<Flags> flags( ) {
-        return Optional.ofNullable(theFlags);
+    public String getPointName() {
+      return pointName;
     }
+  }
 
-    @Nullable
-    public Flags getFlags() {
-        return theFlags;
-    }
+  private final Flags theFlags;
 
-    public AbortActionException(Throwable cause, @Nullable Flags flags) {
-        super(cause);
-        this.theFlags = flags;
-    }
+  public AbortActionException(
+      String msg, Throwable cause,
+      @Nullable Flags flags
+  ) {
+    super(msg, cause);
+    this.theFlags = flags;
+  }
+
+  public AbortActionException(Throwable cause, @Nullable Flags flags) {
+    super(cause);
+    this.theFlags = flags;
+  }
+
+  @NotNull
+  public Optional<Flags> flags() {
+    return Optional.ofNullable(theFlags);
+  }
+
+  @Nullable
+  public Flags getFlags() {
+    return theFlags;
+  }
 
 }
