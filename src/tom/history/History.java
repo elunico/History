@@ -56,248 +56,251 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class History {
 
-    private int limit;
-    private LinkedBlockingDeque<Action> undoDeque = new LinkedBlockingDeque<>( );
-    private LinkedBlockingDeque<Action> redoDeque = new LinkedBlockingDeque<>( );
-    private Lock lock = new ReentrantLock( );
-    private Button undoButton;
-    private Button redoButton;
+  private int limit;
+  private LinkedBlockingDeque<Action> undoDeque = new LinkedBlockingDeque<>();
+  private LinkedBlockingDeque<Action> redoDeque = new LinkedBlockingDeque<>();
+  private Lock lock = new ReentrantLock();
+  private Button undoButton;
+  private Button redoButton;
 
-    public History( ) {
-        this( -1, null, null );
+  public History() {
+    this(-1, null, null);
+  }
+
+  public History(
+      int limit, @Nullable Button undoButton,
+      @Nullable Button redoButton
+  ) {
+    this.limit = limit;
+    this.undoButton = undoButton;
+    this.redoButton = redoButton;
+  }
+
+  public History(int limit) {
+    this(limit, null, null);
+  }
+
+  public History(@Nullable Button undoButton, @Nullable Button redoButton) {
+    this(-1, undoButton, redoButton);
+  }
+
+  /**
+   * Return the maximum possible number of undos and redos to store. Undos and
+   * redos are counted independently and so the sum of allowed redos and undos
+   * maybe greater than this but the total number of saved {@link Action}
+   * instances is never more than twice this limit. Returns -1 if no
+   * limit has been set by the user
+   *
+   * @return the maximum number of undos or redos allowed or -1 if such a limit
+   * was never set
+   */
+  public int getLimit() {
+    return limit;
+  }
+
+  /**
+   * Sets the limit on the maximum number of undos and redo actions to store
+   *
+   * @param limit the limit of the number of undos and redos to store
+   * @see #getLimit()
+   */
+  public void setLimit(int limit) {
+    if (limit == 0) {
+      throw new IllegalArgumentException("Limit for History must be " +
+                                         "either greater than 0 or -1 " +
+                                         "for no limit");
     }
+    this.limit = limit;
+  }
 
-    public History( int limit, @Nullable Button undoButton,
-                    @Nullable Button redoButton )
-    {
-        this.limit = limit;
-        this.undoButton = undoButton;
-        this.redoButton = redoButton;
+  /**
+   * Registers the button passed as the undo button of the program. By passing
+   * this method a {@link Button} instance it will disable and enable that
+   * button in accordance with the availability of the undo function within
+   * the tom.history.History class itself. So, if there are no actions to undo, then
+   * the undo button would be disabled and otherwise it would be enabled
+   *
+   * @param button the button to be treated as the undo button by the tom.history.History
+   *               class
+   */
+  public void registerUndoButton(@NotNull Button button) {
+    undoButton = button;
+  }
+
+  /**
+   * Registers a button as the redo button. Performs the same tasks as
+   * {@link #registerUndoButton(Button)}
+   *
+   * @param button
+   * @see #registerUndoButton(Button)
+   */
+  public void registerRedoButton(@NotNull Button button) {
+    redoButton = button;
+  }
+
+  /**
+   * Stores the action in the stack of actions collecting all undo-able actions
+   * and then calls the {@link Action#execute()} method of the action.
+   * <p>
+   * Note that this method calls {@link Lock#lock()} and will wait for all
+   * other threads to not be undoing, redoing, or registering an action before
+   * it registers the action
+   *
+   * @param action the action that will be registered and executed
+   * @see #registerAction(Action)
+   */
+  public void registerActionAndExecute(@NotNull Action action) {
+    lock.lock();
+    try {
+      registerAction(action);
+      action.execute();
+      updateButtonsForExecute();
+    } finally {
+      lock.unlock();
     }
+  }
 
-    public History( int limit ) {
-        this( limit, null, null );
+  /**
+   * Stores the action in the stack of action collecting all the undo-able
+   * actions
+   * <p>
+   * Note that this method calls {@link Lock#lock()} and will wait for all
+   * other threads to not be undoing, redoing, or registering an action before
+   * it registers the action
+   *
+   * @param action the action to be stored
+   * @see #registerActionAndExecute(Action)
+   */
+  public void registerAction(@NotNull Action action) {
+    lock.lock();
+    try {
+      if (limit > 0 && undoDeque.size() >= limit) {
+        undoDeque.removeLast();
+      }
+      undoDeque.push(action);
+      redoDeque.clear();
+      if (redoButton != null) {
+        redoButton.setDisable(true);
+      }
+    } finally {
+      lock.unlock();
     }
+  }
 
-    public History( @Nullable Button undoButton, @Nullable Button redoButton ) {
-        this( -1, undoButton, redoButton );
+  private void updateButtonsForExecute() {
+    if (redoButton != null) {
+      redoButton.setDisable(true);
+      redoDeque.clear();
     }
-
-    /**
-     * Return the maximum possible number of undos and redos to store. Undos and
-     * redos are counted independently and so the sum of allowed redos and undos
-     * maybe greater than this but the total number of saved {@link Action}
-     * instances is never more than twice this limit. Returns -1 if no
-     * limit has been set by the user
-     *
-     * @return the maximum number of undos or redos allowed or -1 if such a limit
-     * was never set
-     */
-    public int getLimit( ) {
-        return limit;
+    if (undoButton != null) {
+      if (!undoDeque.isEmpty()) {
+        undoButton.setDisable(false);
+      }
     }
+  }
 
-    /**
-     * Sets the limit on the maximum number of undos and redo actions to store
-     *
-     * @param limit the limit of the number of undos and redos to store
-     * @see #getLimit()
-     */
-    public void setLimit( int limit ) {
-        if ( limit == 0 ) {
-            throw new IllegalArgumentException( "Limit for History must be " +
-                                                "either greater than 0 or -1 " +
-                                                "for no limit" );
+  /**
+   * Use this function to execute an action that has just been registered
+   * If you choose to use the {@link #registerAction(Action)} method instead
+   * of the {@link #registerActionAndExecute(Action)} method, you can call this
+   * method after to execute the <strong>most recently registered action</strong>
+   */
+  public void executeMostRecentAction() {
+    lock.lock();
+    try {
+      undoDeque.peekFirst().execute();
+      updateButtonsForExecute();
+    } finally {
+      lock.unlock();
+    }
+  }
+
+  /**
+   * This method retrieves the most recently registered {@link Action} that
+   * has not already been undone by this method and calls the {@link Action#undo()}
+   * method on it
+   * <p>
+   * Note that this method calls {@link Lock#lock()} and will wait for all
+   * other threads to not be undoing, redoing, or registering an action before
+   * it registers the action
+   *
+   * @throws NothingToUndoException if the undo deque is empty and there is
+   *                                nothing to undo
+   */
+  public void undo() throws NothingToUndoException {
+    lock.lock();
+    try {
+      if (undoDeque.isEmpty()) {
+        throw new NothingToUndoException("Undo deque is empty: Nothing to undo");
+      }
+      else {
+        Action a = undoDeque.pop();
+        a.undo();
+        if (limit > 0 && redoDeque.size() >= limit) {
+          redoDeque.removeLast();
         }
-        this.limit = limit;
+        redoDeque.push(a);
+        updateButtonsForUndo();
+      }
+    } finally {
+      lock.unlock();
     }
+  }
 
-    /**
-     * Registers the button passed as the undo button of the program. By passing
-     * this method a {@link Button} instance it will disable and enable that
-     * button in accordance with the availability of the undo function within
-     * the tom.history.History class itself. So, if there are no actions to undo, then
-     * the undo button would be disabled and otherwise it would be enabled
-     *
-     * @param button the button to be treated as the undo button by the tom.history.History
-     *               class
-     */
-    public void registerUndoButton( @NotNull Button button ) {
-        undoButton = button;
+  private void updateButtonsForUndo() {
+    if (undoDeque.isEmpty()) {
+      if (undoButton != null) {
+        undoButton.setDisable(true);
+      }
     }
+    if (redoButton != null) {
+      redoButton.setDisable(false);
+    }
+  }
 
-    /**
-     * Registers a button as the redo button. Performs the same tasks as
-     * {@link #registerUndoButton(Button)}
-     *
-     * @param button
-     * @see #registerUndoButton(Button)
-     */
-    public void registerRedoButton( @NotNull Button button ) {
-        redoButton = button;
+  /**
+   * This method retrieves the most recently undone {@link Action} that
+   * has not already been redone by this method and calls the {@link Action#redo()}
+   * method on it. Note that an action must be undone by calling
+   * {@link #undo()} first. Note also, that any and every time a new action
+   * is registered using either {@link #registerAction(Action)} or
+   * {@link #registerActionAndExecute(Action)} all actions saved for redoing are
+   * cleared. That is the redo stack is cleared by calling {@link LinkedBlockingDeque#clear()}
+   * <p>
+   * Note that this method calls {@link Lock#lock()} and will wait for all
+   * other threads to not be undoing, redoing, or registering an action before
+   * it registers the action
+   *
+   * @throws NothingToRedoException if the redo deque is empty and there is nothing to redo
+   */
+  public void redo() throws NothingToRedoException {
+    lock.lock();
+    try {
+      if (redoDeque.isEmpty()) {
+        throw new NothingToRedoException("Redo deque is empty: Nothing to redo");
+      }
+      else {
+        Action a = redoDeque.pop();
+        a.redo();
+        if (limit > 0 && undoDeque.size() >= limit) {
+          undoDeque.removeLast();
+        }
+        undoDeque.push(a);
+        updateButtonsForRedo();
+      }
+    } finally {
+      lock.unlock();
     }
+  }
 
-    /**
-     * Stores the action in the stack of actions collecting all undo-able actions
-     * and then calls the {@link Action#execute()} method of the action.
-     * <p>
-     * Note that this method calls {@link Lock#lock()} and will wait for all
-     * other threads to not be undoing, redoing, or registering an action before
-     * it registers the action
-     *
-     * @param action the action that will be registered and executed
-     * @see #registerAction(Action)
-     */
-    public void registerActionAndExecute( @NotNull Action action ) {
-        lock.lock( );
-        try {
-            registerAction( action );
-            action.execute( );
-            updateButtonsForExecute( );
-        } finally {
-            lock.unlock( );
-        }
+  private void updateButtonsForRedo() {
+    if (redoDeque.isEmpty()) {
+      if (redoButton != null) {
+        redoButton.setDisable(true);
+      }
     }
-
-    private void updateButtonsForExecute( ) {
-        if ( redoButton != null ) {
-            redoButton.setDisable( true );
-            redoDeque.clear( );
-        }
-        if ( undoButton != null ) {
-            if ( !undoDeque.isEmpty( ) ) {
-                undoButton.setDisable( false );
-            }
-        }
+    if (undoButton != null) {
+      undoButton.setDisable(false);
     }
-
-    /**
-     * Stores the action in the stack of action collecting all the undo-able
-     * actions
-     * <p>
-     * Note that this method calls {@link Lock#lock()} and will wait for all
-     * other threads to not be undoing, redoing, or registering an action before
-     * it registers the action
-     *
-     * @param action the action to be stored
-     * @see #registerActionAndExecute(Action)
-     */
-    public void registerAction( @NotNull Action action ) {
-        lock.lock( );
-        try {
-            if ( limit > 0 && undoDeque.size( ) >= limit ) {
-                undoDeque.removeLast( );
-            }
-            undoDeque.push( action );
-            redoDeque.clear( );
-            if ( redoButton != null ) {
-                redoButton.setDisable( true );
-            }
-        } finally {
-            lock.unlock( );
-        }
-    }
-
-    /**
-     * Use this function to execute an action that has just been registered
-     * If you choose to use the {@link #registerAction(Action)} method instead
-     * of the {@link #registerActionAndExecute(Action)} method, you can call this
-     * method after to execute the <strong>most recently registered action</strong>
-     */
-    public void executeMostRecentAction( ) {
-        lock.lock( );
-        try {
-            undoDeque.peekFirst( ).execute( );
-            updateButtonsForExecute( );
-        } finally {
-            lock.unlock( );
-        }
-    }
-
-    /**
-     * This method retrieves the most recently registered {@link Action} that
-     * has not already been undone by this method and calls the {@link Action#undo()}
-     * method on it
-     * <p>
-     * Note that this method calls {@link Lock#lock()} and will wait for all
-     * other threads to not be undoing, redoing, or registering an action before
-     * it registers the action
-     *
-     * @throws NothingToUndoException if the undo deque is empty and there is
-     *                                nothing to undo
-     */
-    public void undo( ) throws NothingToUndoException {
-        lock.lock( );
-        try {
-            if ( undoDeque.isEmpty( ) ) {
-                throw new NothingToUndoException( "Undo deque is empty: Nothing to undo" );
-            } else {
-                Action a = undoDeque.pop( );
-                a.undo( );
-                if ( limit > 0 && redoDeque.size( ) >= limit ) {
-                    redoDeque.removeLast( );
-                }
-                redoDeque.push( a );
-                updateButtonsForUndo( );
-            }
-        } finally {
-            lock.unlock( );
-        }
-    }
-
-    private void updateButtonsForUndo( ) {
-        if ( undoDeque.isEmpty( ) ) {
-            if ( undoButton != null ) {
-                undoButton.setDisable( true );
-            }
-        }
-        if ( redoButton != null ) {
-            redoButton.setDisable( false );
-        }
-    }
-
-    /**
-     * This method retrieves the most recently undone {@link Action} that
-     * has not already been redone by this method and calls the {@link Action#redo()}
-     * method on it. Note that an action must be undone by calling
-     * {@link #undo()} first. Note also, that any and every time a new action
-     * is registered using either {@link #registerAction(Action)} or
-     * {@link #registerActionAndExecute(Action)} all actions saved for redoing are
-     * cleared. That is the redo stack is cleared by calling {@link LinkedBlockingDeque#clear()}
-     * <p>
-     * Note that this method calls {@link Lock#lock()} and will wait for all
-     * other threads to not be undoing, redoing, or registering an action before
-     * it registers the action
-     *
-     * @throws NothingToRedoException if the redo deque is empty and there is nothing to redo
-     */
-    public void redo( ) throws NothingToRedoException {
-        lock.lock( );
-        try {
-            if ( redoDeque.isEmpty( ) ) {
-                throw new NothingToRedoException( "Redo deque is empty: Nothing to redo" );
-            } else {
-                Action a = redoDeque.pop( );
-                a.redo( );
-                if ( limit > 0 && undoDeque.size( ) >= limit ) {
-                    undoDeque.removeLast( );
-                }
-                undoDeque.push( a );
-                updateButtonsForRedo( );
-            }
-        } finally {
-            lock.unlock( );
-        }
-    }
-
-    private void updateButtonsForRedo( ) {
-        if ( redoDeque.isEmpty( ) ) {
-            if ( redoButton != null ) {
-                redoButton.setDisable( true );
-            }
-        }
-        if ( undoButton != null ) {
-            undoButton.setDisable( false );
-        }
-    }
+  }
 }
