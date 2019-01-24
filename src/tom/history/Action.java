@@ -29,36 +29,36 @@ package tom.history;
  */
 public interface Action {
 
-    /**
-     * Called to execute the action. It is called when the tom.history.Action is to proceed
-     * or take place for the first time. Also called by {@link History#registerActionAndExecute(Action)}
-     * While this method need not check to ensure, the execute method should only
-     * be called in code once and then {@link #undo()} and {@link #redo()} should
-     * be used to move back and forth. Still, the redo method may, in cases where
-     * it is logically sound to do so, consist of only a single line: a call to
-     * execute
-     */
-    void execute( );
+  /**
+   * Called to execute the action. It is called when the tom.history.Action is to proceed
+   * or take place for the first time. Also called by {@link History#registerActionAndExecute(Action)}
+   * While this method need not check to ensure, the execute method should only
+   * be called in code once and then {@link #undo()} and {@link #redo()} should
+   * be used to move back and forth. Still, the redo method may, in cases where
+   * it is logically sound to do so, consist of only a single line: a call to
+   * execute
+   */
+  void execute();
 
-    /**
-     * Called in order to undo the action, restoring all things to their
-     * states as they were before the call to {@link #execute()}. While this
-     * method does no checking to ensure execute was called first, it is logically
-     * senseless to use this method before execute.
-     * <p>
-     * Also called by {@link History#undo()}
-     */
-    void undo( );
+  /**
+   * Called in order to undo the action, restoring all things to their
+   * states as they were before the call to {@link #execute()}. While this
+   * method does no checking to ensure execute was called first, it is logically
+   * senseless to use this method before execute.
+   * <p>
+   * Also called by {@link History#undo()}
+   */
+  void undo();
 
-    /**
-     * Called in order to redo the action. This can sometimes be implemented
-     * as a simple call to {@link #execute()} but sometimes requires more processing
-     * This method should only be called following a call to execute and subsequent
-     * call to {@link #undo()}
-     * <p>
-     * Also called by {@link History#redo()}
-     *
-     * @see History
-     */
-    void redo( );
+  /**
+   * Called in order to redo the action. This can sometimes be implemented
+   * as a simple call to {@link #execute()} but sometimes requires more processing
+   * This method should only be called following a call to execute and subsequent
+   * call to {@link #undo()}
+   * <p>
+   * Also called by {@link History#redo()}
+   *
+   * @see History
+   */
+  void redo();
 }
